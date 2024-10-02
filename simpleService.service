@@ -7,3 +7,5 @@ ExecStart=/etc/simpleService.sh
 Restart=on-failure
 User=ubuntu
 
+[Install]
+WantedBy=multi-user.target
