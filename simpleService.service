@@ -1,0 +1,9 @@
+[Unit]
+Description=Simple Service
+
+[Service]
+Type=simple
+ExecStart=/etc/simpleService.sh
+Restart=on-failure
+User=ubuntu
+
