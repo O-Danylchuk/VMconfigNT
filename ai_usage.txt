@@ -1,0 +1,122 @@
+During work on the task ChatGPT was used to help to parse some errors related to .service file configuration, as:
+
+prompt -> my simpleService.service, gives "Excess arguments" when u try to start it
+answer -> The error "Excess arguments" in your simpleService.service file is likely due to an issue with the way the ExecStart or other service parameters are defined.
+
+Let’s review the service file syntax. Here's your current configuration:
+[Unit]
+Description=Simple Service
+
+[Service]
+Type=simple
+ExecStart=/etc/simpleService.sh
+Restart=on-failure
+User=ubuntu
+
+Potential Issues:
+
+    User Field: Make sure the user ubuntu exists on your system. If the user doesn't exist, systemd might throw an error.
+    ExecStart Path: Verify that /etc/simpleService.sh exists and is executable. This can be checked using:
+
+    bash
+
+ls -l /etc/simpleService.sh
+
+If it's not executable, you can make it executable by running:
+
+bash
+
+    sudo chmod +x /etc/simpleService.sh
+
+Debugging the Service:
+
+To investigate the problem more closely, run:
+
+bash
+
+sudo systemctl status simpleService.service
+
+This will give you more details on what might be causing the issue.
+Updated Recommendation:
+
+Try updating the simpleService.service file as follows to ensure there are no syntax errors or arguments being incorrectly interpreted:
+
+ini
+
+[Unit]
+Description=Simple Service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /etc/simpleService.sh
+Restart=on-failure
+User=ubuntu
+
+Notice the change:
+
+    ExecStart now explicitly calls /bin/bash followed by the script /etc/simpleService.sh. This ensures that the shell is used to execute the script, avoiding possible argument misinterpretation.
+
+
+prompt -> The unit files have no installation config (WantedBy=, RequiredBy=, UpheldBy=,
+Also=, or Alias= settings in the [Install] section, and DefaultInstance= for
+template units). This means they are not meant to be enabled or disabled using systemctl.
+
+answer -> The error you're encountering means that your simpleService.service file is missing an [Install] section. This section is necessary if you want to enable the service to start at boot or to manage it via systemctl enable or systemctl disable. Without this section, you can still start and stop the service manually using systemctl start and systemctl stop, but you won’t be able to enable it to run automatically on boot.
+Solution:
+
+You need to add the [Install] section to your service file to define how and when it should be started.
+
+Here's how you can modify your service file:
+
+[Unit]
+Description=Simple Service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /etc/simpleService.sh
+Restart=on-failure
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target
+
+
+prompt -> if [ -e simpleService.service ]; then
+    sudo mv -f simpleService.service /etc/systemd/system/simpleService.service
+    sudo systemctl enable simpleService.service
+    sudo systemctl start simpleService.service
+    echo -e "simpleService.service is started, to see it's status, run:\n"
+else
+    echo "File simpleService.service not found. Exiting..."
+    exit 1
+fi
+
+how to add validation that service enabled and started correctly
+
+
+answer -> if [ -e simpleService.service ]; then
+    sudo mv -f simpleService.service /etc/systemd/system/simpleService.service
+    sudo systemctl enable simpleService.service
+    sudo systemctl start simpleService.service
+
+    # Validate if the service is enabled
+    if sudo systemctl is-enabled simpleService.service &>/dev/null; then
+        echo "simpleService.service is enabled successfully."
+    else
+        echo "Failed to enable simpleService.service."
+        exit 1
+    fi
+
+    # Validate if the service is running (active)
+    if sudo systemctl is-active simpleService.service &>/dev/null; then
+        echo -e "simpleService.service is running successfully.\nTo check its status, run:\n"
+        echo "sudo systemctl status simpleService.service"
+    else
+        echo "Failed to start simpleService.service."
+        exit 1
+    fi
+else
+    echo "File simpleService.service not found. Exiting..."
+    exit 1
+fi
+
