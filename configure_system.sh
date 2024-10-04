@@ -13,13 +13,7 @@ for packet in "${packages[@]}"; do
     fi
 done
 
-if [ -d /usr/bin/believer ]; then
-    touch /usr/bin/believer/config.pl
-else
-    echo "Directory does not exist. Creating..."
-    sudo mkdir -p /usr/bin/believer/src
-    sudo touch /usr/bin/believer/src/config.pl
-fi
+sudo touch /usr/bin/believer/src/config.pl
 
 if [ -e simpleService.sh ]; then
     sudo chmod +x simpleService.sh
