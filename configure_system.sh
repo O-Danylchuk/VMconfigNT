@@ -47,3 +47,32 @@ else
     exit 1
 fi
 
+sudo echo -e "[Unit]
+Description=Run Simple Service every 3 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=3min
+Unit=simpleService.service
+
+[Install]
+WantedBy=timers.target
+" >> /etc/systemd/system/simpleService.timer
+
+sudo systemctl enable simpleService.timer
+if sudo systemctl is-enabled simpleService.timer&> /dev/null; then
+    echo "simpleService.timer is enabled successfully."
+else
+    echo "Failed to enable simpleService.timer"
+    exit 1
+fi
+    
+sudo systemctl start simpleService.timer
+if sudo systemctl is-active simpleService.timer&> /dev/null; then
+    echo "simpleService.timer is started successfully."
+else
+    echo "Failed to start simpleService.timer"
+    exit 1
+fi
+
+
